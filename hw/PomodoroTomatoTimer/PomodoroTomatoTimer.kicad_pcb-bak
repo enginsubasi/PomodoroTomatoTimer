@@ -2,7 +2,7 @@
 
   (general
     (thickness 1.6)
-    (drawings 6)
+    (drawings 7)
     (tracks 150)
     (zones 0)
     (modules 29)
@@ -1321,7 +1321,8 @@
     )
   )
 
-  (gr_text "Kies RD\nkiesrd.com\nPTT" (at 148.336 87.503) (layer F.SilkS)
+  (gr_circle (center 146.05 88.773) (end 146.35 88.773) (layer F.Mask) (width 0.5))
+  (gr_text "Kies RD\nkiesrd.com\n-PTT-" (at 148.336 87.503) (layer F.SilkS)
     (effects (font (size 1 1) (thickness 0.15)))
   )
   (dimension 25.4 (width 0.15) (layer Eco1.User)
@@ -1341,9 +1342,6 @@
   (gr_line (start 127 76.2) (end 152.4 76.2) (layer Edge.Cuts) (width 0.05))
   (gr_line (start 127 101.6) (end 127 76.2) (layer Edge.Cuts) (width 0.05))
 
-  (via (at 128.27 100.33) (size 1) (drill 0.5) (layers F.Cu B.Cu) (net 3))
-  (via (at 150.876 100.076) (size 1) (drill 0.5) (layers F.Cu B.Cu) (net 3))
-  (via (at 140.589 83.693) (size 1) (drill 0.5) (layers F.Cu B.Cu) (net 3))
   (segment (start 148.011 98.2015) (end 148.011 96.76) (width 0.3) (layer F.Cu) (net 1))
   (segment (start 148.4885 98.679) (end 148.011 98.2015) (width 0.3) (layer F.Cu) (net 1))
   (segment (start 141.952 98.79) (end 142.002 98.74) (width 0.3) (layer F.Cu) (net 1))
@@ -1368,6 +1366,9 @@
   (segment (start 145.49925 93.7005) (end 146.23075 94.432) (width 0.3) (layer F.Cu) (net 1))
   (segment (start 147.361 98.2315) (end 147.361 96.76) (width 0.3) (layer F.Cu) (net 2))
   (segment (start 146.9135 98.679) (end 147.361 98.2315) (width 0.3) (layer F.Cu) (net 2))
+  (via (at 128.27 100.33) (size 1) (drill 0.5) (layers F.Cu B.Cu) (net 3))
+  (via (at 150.876 100.076) (size 1) (drill 0.5) (layers F.Cu B.Cu) (net 3))
+  (via (at 140.589 83.693) (size 1) (drill 0.5) (layers F.Cu B.Cu) (net 3))
   (segment (start 139.9795 100.33) (end 141.351 100.33) (width 0.3) (layer F.Cu) (net 3))
   (via (at 141.351 100.33) (size 1) (drill 0.5) (layers F.Cu B.Cu) (net 3))
   (segment (start 135.1025 100.33) (end 133.35 100.33) (width 0.3) (layer F.Cu) (net 3))
