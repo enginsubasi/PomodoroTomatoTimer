@@ -74,6 +74,7 @@ static void MX_GPIO_Init(void);
 static void MX_IWDG_Init(void);
 /* USER CODE BEGIN PFP */
 void PTT_State_Machine ( void );
+void LED_Driver ( uint8_t LED_5_Bit );
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -109,7 +110,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  // MX_IWDG_Init();
+  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -118,6 +119,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+      HAL_IWDG_Refresh ( &hiwdg );
       PTT_State_Machine ( );
     /* USER CODE END WHILE */
 
@@ -203,27 +205,29 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, POW_CTRL_Pin|LED1_Pin|LED2_Pin|LED3_Pin 
-                          |LED1A9_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(POW_CTRL_GPIO_Port, POW_CTRL_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LED2B1_GPIO_Port, LED2B1_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, LED5_Pin|LED4_Pin|LED3_Pin|LED1_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : POW_CTRL_Pin LED1_Pin LED2_Pin LED3_Pin 
-                           LED1A9_Pin */
-  GPIO_InitStruct.Pin = POW_CTRL_Pin|LED1_Pin|LED2_Pin|LED3_Pin 
-                          |LED1A9_Pin;
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : POW_CTRL_Pin LED5_Pin LED4_Pin LED3_Pin 
+                           LED1_Pin */
+  GPIO_InitStruct.Pin = POW_CTRL_Pin|LED5_Pin|LED4_Pin|LED3_Pin 
+                          |LED1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LED2B1_Pin */
-  GPIO_InitStruct.Pin = LED2B1_Pin;
+  /*Configure GPIO pin : LED2_Pin */
+  GPIO_InitStruct.Pin = LED2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LED2B1_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(LED2_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : BUTTON_Pin */
   GPIO_InitStruct.Pin = BUTTON_Pin;
@@ -234,11 +238,142 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+enum State {
+    INITIAL = 0,
+    WAIT_1_PUSH = 1,
+    DOWN_CNT = 2,
+
+};
+
+uint8_t System_State = INITIAL;
+
+/*
+ * @about: Main system state machine.
+ */
 void PTT_State_Machine ( void )
 {
-    HAL_GetTick();
+    const uint32_t Global_Timeout = 2 * 60 * 60 * 1000; // 2 hours
 
+    const uint32_t SM_Period = 100 - 1;
+    static uint32_t SM_TimeStamp = 0;
+
+    static uint8_t SM_Anm_Cntr = 0;
+
+    if ( ( HAL_GetTick ( ) - SM_TimeStamp ) > SM_Period )
+    {
+        SM_TimeStamp = HAL_GetTick ( );
+
+        switch ( System_State )
+        {
+            case INITIAL:
+
+                ++SM_Anm_Cntr;
+
+                if ( SM_Anm_Cntr < 3 )
+                {
+                    LED_Driver ( 0x01 );
+                }
+                else if ( SM_Anm_Cntr < 6 )
+                {
+                    LED_Driver ( 0x03 );
+                }
+                else if ( SM_Anm_Cntr < 9 )
+                {
+                    LED_Driver ( 0x07 );
+                }
+                else if ( SM_Anm_Cntr < 12 )
+                {
+                    LED_Driver ( 0x0F );
+                }
+                else if ( SM_Anm_Cntr < 15 )
+                {
+                    LED_Driver ( 0x1F );
+                }
+                else
+                {
+                    SM_Anm_Cntr = 0;
+                    System_State = WAIT_1_PUSH;
+                }
+
+            break;
+
+            case WAIT_1_PUSH:
+
+                ++SM_Anm_Cntr;
+
+                if ( SM_Anm_Cntr == 4 )
+                {
+                    LED_Driver ( 0x1F );
+                }
+                else if ( SM_Anm_Cntr >= 9 )
+                {
+                    LED_Driver ( 0x00 );
+                    SM_Anm_Cntr = 0;
+                }
+
+                if ( HAL_GPIO_ReadPin ( BUTTON_GPIO_Port, BUTTON_Pin ) )
+                {
+                    System_State = DOWN_CNT;
+                }
+
+            break;
+
+            case DOWN_CNT:
+
+            break;
+
+            default:
+
+            break;
+
+        }
+    }
+
+    /* Battery saving. To avoid unnecessary use. */
+    if ( HAL_GetTick ( ) > Global_Timeout )
+    {
+        HAL_GPIO_WritePin(POW_CTRL_GPIO_Port, POW_CTRL_Pin, GPIO_PIN_RESET );
+    }
 }
+
+/*
+ * @about: Drives LEDs on PTT.
+ */
+void LED_Driver ( uint8_t LED_5_Bit )
+{
+    uint8_t ldloop_i = 0;
+
+    for ( ; ldloop_i < 5 ; ++ldloop_i )
+    {
+        switch ( ldloop_i )
+        {
+            case 0:
+                HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, ( LED_5_Bit & 0x01 ) );
+            break;
+
+            case 1:
+                HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, ( ( LED_5_Bit >> 1 ) & 0x01 ) );
+            break;
+
+            case 2:
+                HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, ( ( LED_5_Bit >> 2 ) & 0x01 ) );
+            break;
+
+            case 3:
+                HAL_GPIO_WritePin(LED4_GPIO_Port, LED4_Pin, ( ( LED_5_Bit >> 3 ) & 0x01 ) );
+            break;
+
+            case 4:
+                HAL_GPIO_WritePin(LED5_GPIO_Port, LED5_Pin, ( ( LED_5_Bit >> 4 ) & 0x01 ) );
+            break;
+
+            default:
+
+            break;
+        }
+    }
+}
+
 /* USER CODE END 4 */
 
 /**

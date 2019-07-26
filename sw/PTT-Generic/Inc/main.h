@@ -80,16 +80,16 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define POW_CTRL_Pin GPIO_PIN_0
 #define POW_CTRL_GPIO_Port GPIOA
-#define LED1_Pin GPIO_PIN_5
-#define LED1_GPIO_Port GPIOA
-#define LED2_Pin GPIO_PIN_6
-#define LED2_GPIO_Port GPIOA
+#define LED5_Pin GPIO_PIN_5
+#define LED5_GPIO_Port GPIOA
+#define LED4_Pin GPIO_PIN_6
+#define LED4_GPIO_Port GPIOA
 #define LED3_Pin GPIO_PIN_7
 #define LED3_GPIO_Port GPIOA
-#define LED2B1_Pin GPIO_PIN_1
-#define LED2B1_GPIO_Port GPIOB
-#define LED1A9_Pin GPIO_PIN_9
-#define LED1A9_GPIO_Port GPIOA
+#define LED2_Pin GPIO_PIN_1
+#define LED2_GPIO_Port GPIOB
+#define LED1_Pin GPIO_PIN_9
+#define LED1_GPIO_Port GPIOA
 #define BUTTON_Pin GPIO_PIN_10
 #define BUTTON_GPIO_Port GPIOA
 /* USER CODE BEGIN Private defines */
