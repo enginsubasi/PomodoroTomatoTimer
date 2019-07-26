@@ -841,15 +841,4 @@ Text Label 4550 1600 0    50   ~ 0
 POW_CTRL
 Text Label 4550 2500 0    50   ~ 0
 BUTTON
-$Comp
-L Graphic:Logo_Open_Hardware_Small #LOGO1
-U 1 1 5D379F38
-P 7050 5500
-F 0 "#LOGO1" H 7050 5775 50  0001 C CNN
-F 1 "Logo_Open_Hardware_Small" H 7050 5275 50  0001 C CNN
-F 2 "" H 7050 5500 50  0001 C CNN
-F 3 "~" H 7050 5500 50  0001 C CNN
-	1    7050 5500
-	1    0    0    -1  
-$EndComp
 $EndSCHEMATC
