@@ -73,7 +73,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_IWDG_Init(void);
 /* USER CODE BEGIN PFP */
-
+void PTT_State_Machine ( void );
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -109,7 +109,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_IWDG_Init();
+  // MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -118,6 +118,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+      PTT_State_Machine ( );
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -233,7 +234,11 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void PTT_State_Machine ( void )
+{
+    HAL_GetTick();
 
+}
 /* USER CODE END 4 */
 
 /**
