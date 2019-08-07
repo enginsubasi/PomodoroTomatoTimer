@@ -242,7 +242,9 @@ enum State {
     INITIAL = 0,
     WAIT_1_PUSH = 1,
     DOWN_CNT = 2,
-
+    WAIT_2_PUSH = 3,
+    DOWN_CNT_2 = 4,
+    KILL_MYSELF = 5,
 };
 
 uint8_t System_State = INITIAL;
@@ -252,12 +254,18 @@ uint8_t System_State = INITIAL;
  */
 void PTT_State_Machine ( void )
 {
-    const uint32_t Global_Timeout = 2 * 60 * 60 * 1000; // 2 hours
+    const uint32_t Global_Timeout = 1 * 60 * 60 * 1000; // 2 hours
+
 
     const uint32_t SM_Period = 100 - 1;
     static uint32_t SM_TimeStamp = 0;
 
+    static uint32_t SM_DowncounterTimeStamp = 0;
+    static uint32_t SM_DowncounterTime = 0;
+
     static uint8_t SM_Anm_Cntr = 0;
+    static uint8_t SM_LEDAnm1 = 0;
+    static uint8_t SM_LEDAnm2 = 0;
 
     if ( ( HAL_GetTick ( ) - SM_TimeStamp ) > SM_Period )
     {
@@ -303,23 +311,144 @@ void PTT_State_Machine ( void )
 
                 if ( SM_Anm_Cntr == 4 )
                 {
-                    LED_Driver ( 0x1F );
+                    LED_Driver ( 0x00 );
                 }
                 else if ( SM_Anm_Cntr >= 9 )
                 {
-                    LED_Driver ( 0x00 );
+                    LED_Driver ( 0x1F );
                     SM_Anm_Cntr = 0;
                 }
 
                 if ( HAL_GPIO_ReadPin ( BUTTON_GPIO_Port, BUTTON_Pin ) )
                 {
                     System_State = DOWN_CNT;
+                    SM_DowncounterTimeStamp = 10 * 60 * 25; /* 25 minutes */
+                    SM_DowncounterTime = SM_DowncounterTimeStamp;
                 }
 
             break;
 
             case DOWN_CNT:
 
+                --SM_DowncounterTime;
+
+                if ( SM_DowncounterTime > ( ( SM_DowncounterTimeStamp * 4 ) / 5 ) )
+                {
+                    SM_LEDAnm1 = 0x1E;
+                    SM_LEDAnm2 = 0x1F;
+                }
+                else if ( SM_DowncounterTime > ( ( SM_DowncounterTimeStamp * 3 ) / 5 ) )
+                {
+                    SM_LEDAnm1 = 0x1C;
+                    SM_LEDAnm2 = 0x1E;
+                }
+                else if ( SM_DowncounterTime > ( ( SM_DowncounterTimeStamp * 2 ) / 5 ) )
+                {
+                    SM_LEDAnm1 = 0x18;
+                    SM_LEDAnm2 = 0x1C;
+                }
+                else if ( SM_DowncounterTime > ( ( SM_DowncounterTimeStamp * 1 ) / 5 ) )
+                {
+                    SM_LEDAnm1 = 0x10;
+                    SM_LEDAnm2 = 0x18;
+                }
+                else if ( ( SM_DowncounterTime < ( ( SM_DowncounterTimeStamp * 1 ) / 5 ) ) && SM_DowncounterTime != 0 )
+                {
+                    SM_LEDAnm1 = 0x00;
+                    SM_LEDAnm2 = 0x10;
+                }
+                else if ( SM_DowncounterTime == 0 )
+                {
+                    System_State = WAIT_2_PUSH;
+                }
+
+                ++SM_Anm_Cntr;
+
+                if ( SM_Anm_Cntr == 4 )
+                {
+                    LED_Driver ( SM_LEDAnm1 );
+                }
+                else if ( SM_Anm_Cntr >= 9 )
+                {
+                    LED_Driver ( SM_LEDAnm2 );
+                    SM_Anm_Cntr = 0;
+                }
+
+            break;
+
+            case WAIT_2_PUSH:
+
+                ++SM_Anm_Cntr;
+
+                if ( SM_Anm_Cntr == 2 )
+                {
+                    LED_Driver ( 0x00 );
+                }
+                else if ( SM_Anm_Cntr >= 9 )
+                {
+                    LED_Driver ( 0x1F );
+                    SM_Anm_Cntr = 0;
+                }
+
+                if ( HAL_GPIO_ReadPin ( BUTTON_GPIO_Port, BUTTON_Pin ) )
+                {
+                    System_State = DOWN_CNT_2;
+                    SM_DowncounterTimeStamp = 10 * 60 * 5; /* 5 minutes */
+                    SM_DowncounterTime = SM_DowncounterTimeStamp;
+                }
+
+            break;
+
+            case DOWN_CNT_2:
+
+                --SM_DowncounterTime;
+
+                if ( SM_DowncounterTime > ( ( SM_DowncounterTimeStamp * 4 ) / 5 ) )
+                {
+                    SM_LEDAnm1 = 0x1E;
+                    SM_LEDAnm2 = 0x1F;
+                }
+                else if ( SM_DowncounterTime > ( ( SM_DowncounterTimeStamp * 3 ) / 5 ) )
+                {
+                    SM_LEDAnm1 = 0x1C;
+                    SM_LEDAnm2 = 0x1E;
+                }
+                else if ( SM_DowncounterTime > ( ( SM_DowncounterTimeStamp * 2 ) / 5 ) )
+                {
+                    SM_LEDAnm1 = 0x18;
+                    SM_LEDAnm2 = 0x1C;
+                }
+                else if ( SM_DowncounterTime > ( ( SM_DowncounterTimeStamp * 1 ) / 5 ) )
+                {
+                    SM_LEDAnm1 = 0x10;
+                    SM_LEDAnm2 = 0x18;
+                }
+                else if ( ( SM_DowncounterTime < ( ( SM_DowncounterTimeStamp * 1 ) / 5 ) ) && SM_DowncounterTime != 0 )
+                {
+                    SM_LEDAnm1 = 0x00;
+                    SM_LEDAnm2 = 0x10;
+                }
+                else if ( SM_DowncounterTime == 0 )
+                {
+                    System_State = KILL_MYSELF;
+                }
+
+                ++SM_Anm_Cntr;
+
+                if ( SM_Anm_Cntr == 2 )
+                {
+                    LED_Driver ( SM_LEDAnm1 );
+                }
+                else if ( SM_Anm_Cntr >= 9 )
+                {
+                    LED_Driver ( SM_LEDAnm2 );
+                    SM_Anm_Cntr = 0;
+                }
+
+            break;
+
+            case KILL_MYSELF:
+                HAL_GPIO_WritePin(POW_CTRL_GPIO_Port, POW_CTRL_Pin, GPIO_PIN_RESET);
             break;
 
             default:
