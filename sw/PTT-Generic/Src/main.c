@@ -254,8 +254,9 @@ uint8_t System_State = INITIAL;
  */
 void PTT_State_Machine ( void )
 {
-    const uint32_t Global_Timeout = 1 * 60 * 60 * 1000; // 2 hours
+    const uint32_t Global_Timeout = 1 * 60 * 60 * 1000; // 1 hours
 
+    static uint32_t SM_ShutDownCounter = 0;
 
     const uint32_t SM_Period = 100 - 1;
     static uint32_t SM_TimeStamp = 0;
@@ -270,6 +271,22 @@ void PTT_State_Machine ( void )
     if ( ( HAL_GetTick ( ) - SM_TimeStamp ) > SM_Period )
     {
         SM_TimeStamp = HAL_GetTick ( );
+
+        if ( HAL_GPIO_ReadPin ( BUTTON_GPIO_Port, BUTTON_Pin ) )
+        {
+        	++SM_ShutDownCounter;
+        }
+        else
+        {
+        	if ( SM_ShutDownCounter > 50 )
+        	{
+        		HAL_GPIO_WritePin(POW_CTRL_GPIO_Port, POW_CTRL_Pin, GPIO_PIN_RESET);
+        	}
+        	else
+        	{
+        		SM_ShutDownCounter = 0;
+        	}
+        }
 
         switch ( System_State )
         {
