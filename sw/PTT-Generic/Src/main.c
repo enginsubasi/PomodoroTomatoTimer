@@ -254,7 +254,7 @@ uint8_t System_State = INITIAL;
  */
 void PTT_State_Machine ( void )
 {
-    const uint32_t Global_Timeout = 1 * 60 * 60 * 1000; // 2 hours
+    const uint32_t Global_Timeout = 1 * 60 * 60 * 1000; // 1 hour
 
 
     const uint32_t SM_Period = 100 - 1;
