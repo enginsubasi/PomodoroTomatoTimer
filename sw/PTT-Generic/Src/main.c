@@ -284,7 +284,14 @@ void PTT_State_Machine ( void )
         	}
         	else
         	{
-        		SM_ShutDownCounter = 0;
+        	    if ( SM_ShutDownCounter > 10 )
+        	    {
+        	        SM_ShutDownCounter -= 2;
+        	    }
+        	    else
+        	    {
+        	        SM_ShutDownCounter = 0;
+        	    }
         	}
         }
 
