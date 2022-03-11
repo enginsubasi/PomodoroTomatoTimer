@@ -255,6 +255,7 @@ uint8_t System_State = INITIAL;
 void PTT_State_Machine ( void )
 {
     const uint32_t Global_Timeout = 1 * 60 * 60 * 1000; // 1 hour
+    const uint32_t Global_Timeout_Initial = 1 * 60 * 1 * 1000; // 1 hour
 
     static uint32_t SM_ShutDownCounter = 0;
 
@@ -280,6 +281,7 @@ void PTT_State_Machine ( void )
         {
         	if ( SM_ShutDownCounter > 50 )
         	{
+        	    HAL_Delay(20);
         		HAL_GPIO_WritePin(POW_CTRL_GPIO_Port, POW_CTRL_Pin, GPIO_PIN_RESET);
         	}
         	else
@@ -479,6 +481,14 @@ void PTT_State_Machine ( void )
 
             break;
 
+        }
+    }
+
+    if ( System_State == WAIT_1_PUSH )
+    {
+        if ( HAL_GetTick ( ) > Global_Timeout_Initial )
+        {
+            HAL_GPIO_WritePin(POW_CTRL_GPIO_Port, POW_CTRL_Pin, GPIO_PIN_RESET );
         }
     }
 
